@@ -60,6 +60,7 @@ prop_data$new_labels <- factor(
              "Non-classical Monocytes", "cDCs")  # von unten nach oben
 )
 
+# plot
 ggplot(prop_data, aes(x = Age_Group, y = prop, fill = new_labels, pattern = new_labels)) +
   geom_bar_pattern(
     stat = "identity",
