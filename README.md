@@ -17,3 +17,4 @@ All code and data associated with this study are present in the paper, the Suppl
 All other analyses were performed using publicly available software packages as described in the Methods section of the manuscript.
 
 ---
+![Graphical Abstract](graphical abstract-12.pdf)
