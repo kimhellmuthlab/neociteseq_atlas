@@ -1,14 +1,8 @@
 # Load required libraries
 library(Seurat)
-library(ggplot2)
-library(dplyr)
-library(tidyr)
+library(pheatmap)
 library(MuDataSeurat)
 library(hdf5r)
-library(ggrepel)
-library(enrichR)
-library(forcats)
-library(tibble)
 
 # Load data, e.g., baseline Myeloid cells 
 seurat <- ReadH5MU("myeloid_baseline.h5mu")
