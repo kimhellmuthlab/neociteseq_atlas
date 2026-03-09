@@ -11,13 +11,12 @@ library(forcats)
 library(tibble)
 library(DESeq2)
 
-# Load data
+# Load data e.g., Myeloid cells 
 Myeloid <- ReadH5MU("myeloid_neo_all.h5mu")
 
-# Adapt metadata 
+# Assign broader cell label categories within metadata 
 Myeloid@meta.data$cell_labels <- as.character(Myeloid@meta.data$cell_labels)
 Myeloid@meta.data$cell_labels[Myeloid@meta.data$cell_labels %in% c("Classical Monocytes", "Non-classical Monocytes", "Intermediate Monocytes")] <- "Monocytes"
-Myeloid@meta.data$cell_labels[Myeloid@meta.data$cell_labels %in% c("Neutrophils")] <- "CD15+ myeloid cells"
 Myeloid@meta.data$cell_labels <- factor(Myeloid@meta.data$cell_labels)
 
 # Age-stratified DEG analysis e.g., for Myeloid cells (stim vs. baseline) Fig. 4
@@ -31,7 +30,7 @@ cell_types <- c(
 )
 
 stimulus <- "LPS"
-# stimulus <- "R848"
+# stimulus <- "R848" # for R848 vs. baseline 
 outdir <- "DESeq2_age_stratified_results"
 age_groups <- c("lt32+0", "ge32+0")
 dir.create(outdir, showWarnings = FALSE)
@@ -275,94 +274,89 @@ ggplot(
     strip.text = element_text(face = "bold")
   )
 
-# Overview table 
-final_scatter_table <- dplyr::bind_rows(
-  tbl_Mono_R848 %>% mutate(cell = "Monocytes", stimulus = "R848"),
-  tbl_CD15_R848 %>% mutate(cell = "CD15+ myeloid cells", stimulus = "R848"),
-  tbl_Mono_LPS  %>% mutate(cell = "Monocytes", stimulus = "LPS"),
-  tbl_CD15_LPS  %>% mutate(cell = "CD15+ myeloid cells", stimulus = "LPS")
-) %>%
-  mutate(
-    interaction_significant = !is.na(interaction_padj) & interaction_padj < 0.05,
-    delta_FC = log2FC_late - log2FC_early
+# Prepare interaction analysis, scatter, and bar plots from age-stratified DESeq2-results
+
+# -------------------------------
+# LOAD AGE-STRATIFIED DESEQ2 RESULTS
+# -------------------------------
+
+load_res <- function(cell, stim, age){
+  
+  readRDS(
+    paste0(
+      "DESeq2_age_stratified_results/",
+      cell, "_", stim, "_", age,
+      "_stim_vs_baseline.rds"
+    )
   )
-
-# Interaction DESeq2 analysis 
-final_scatter_table <- read.csv(
-  "final_scatter_table.csv",
-  stringsAsFactors = FALSE
-)
-
-filtered_tbl <- final_scatter_table %>%
-  filter(
-    !grepl("^ENSG", gene),
-    !grepl("^LINC", gene)
-  )
-
-make_union_geneset <- function(df, cell_type, stim) {
-  
-  late_genes <- df %>%
-    filter(
-      cell == cell_type,
-      stimulus == stim,
-      padj_late < 0.05,
-      log2FC_late > 1
-    ) %>%
-    pull(gene)
-  
-  early_genes <- df %>%
-    filter(
-      cell == cell_type,
-      stimulus == stim,
-      padj_early < 0.05,
-      log2FC_early > 1
-    ) %>%
-    pull(gene)
-  
-  unique(c(late_genes, early_genes))
 }
 
-genes_monocytes_R848 <- make_union_geneset(
-  filtered_tbl,
-  cell_type = "Monocytes",
-  stim = "R848"
+# Monocytes
+res_Mono_R848_lt32 <- load_res("Monocytes","R848","lt32+0")
+res_Mono_R848_ge32 <- load_res("Monocytes","R848","ge32+0")
+
+res_Mono_LPS_lt32 <- load_res("Monocytes","LPS","lt32+0")
+res_Mono_LPS_ge32 <- load_res("Monocytes","LPS","ge32+0")
+
+# CD15
+res_CD15_R848_lt32 <- load_res("CD15+_myeloid_cells","R848","lt32+0")
+res_CD15_R848_ge32 <- load_res("CD15+_myeloid_cells","R848","ge32+0")
+
+res_CD15_LPS_lt32 <- load_res("CD15+_myeloid_cells","LPS","lt32+0")
+res_CD15_LPS_ge32 <- load_res("CD15+_myeloid_cells","LPS","ge32+0")
+
+# -------------------------------
+# BUILD UNION DEG GENE SETS
+# -------------------------------
+
+make_union_geneset_from_res <- function(res_early, res_late){
+  
+  df_early <- as.data.frame(res_early) %>%
+    tibble::rownames_to_column("gene")
+  
+  df_late <- as.data.frame(res_late) %>%
+    tibble::rownames_to_column("gene")
+  
+  early_genes <- df_early %>%
+    filter(!is.na(padj)) %>%
+    filter(padj < 0.05, log2FoldChange > 1) %>%
+    filter(!grepl("^ENSG|^LINC", gene)) %>%
+    pull(gene)
+  
+  late_genes <- df_late %>%
+    filter(!is.na(padj)) %>%
+    filter(padj < 0.05, log2FoldChange > 1) %>%
+    filter(!grepl("^ENSG|^LINC", gene)) %>%
+    pull(gene)
+  
+  unique(c(early_genes, late_genes))
+}
+
+# -------------------------------
+# CREATE GENE SETS FOR INTERACTION ANALYSIS
+# -------------------------------
+
+genes_monocytes_R848 <- make_union_geneset_from_res(
+  res_Mono_R848_lt32,
+  res_Mono_R848_ge32
 )
 
-genes_monocytes_LPS <- make_union_geneset(
-  filtered_tbl,
-  cell_type = "Monocytes",
-  stim = "LPS"
+genes_monocytes_LPS <- make_union_geneset_from_res(
+  res_Mono_LPS_lt32,
+  res_Mono_LPS_ge32
 )
 
-genes_cd15_R848 <- make_union_geneset(
-  filtered_tbl,
-  cell_type = "CD15+ myeloid cells",
-  stim = "R848"
+genes_cd15_R848 <- make_union_geneset_from_res(
+  res_CD15_R848_lt32,
+  res_CD15_R848_ge32
 )
 
-genes_cd15_LPS <- make_union_geneset(
-  filtered_tbl,
-  cell_type = "CD15+ myeloid cells",
-  stim = "LPS"
+genes_cd15_LPS <- make_union_geneset_from_res(
+  res_CD15_LPS_lt32,
+  res_CD15_LPS_ge32
 )
 
-gene_set_sizes <- tibble(
-  gene_set = c(
-    "Monocytes_R848",
-    "Monocytes_LPS",
-    "CD15_R848",
-    "CD15_LPS"
-  ),
-  n_genes = c(
-    length(genes_monocytes_R848),
-    length(genes_monocytes_LPS),
-    length(genes_cd15_R848),
-    length(genes_cd15_LPS)
-  )
-)
-
-gene_set_sizes
-
+# Interaction DESeq2 analysis 
 cell_types <- c(
   "Monocytes",
   "CD15+ myeloid cells"
@@ -712,6 +706,105 @@ out_Mono_R848 <- scatter_deg_union_realFC_interaction(
 p_Mono_R848     <- out_Mono_R848$plot
 genes_Mono_R848 <- out_Mono_R848$genes
 tbl_Mono_R848   <- out_Mono_R848$table
+
+p_Mono_R848
+
+# for Monocytes LPS vs. baseline 
+res_Mono_LPS_lt32 <- readRDS(
+  "DESeq2_age_stratified_results/Monocytes_LPS_lt32+0_stim_vs_baseline.rds")
+
+res_Mono_LPS_ge32 <- readRDS(
+  "DESeq2_age_stratified_results/Monocytes_LPS_ge32+0_stim_vs_baseline.rds")
+
+res_Mono_LPS_interaction <- readRDS(
+  "DESeq2_interaction_results_genesets/Monocytes_LPS_interaction.rds")
+
+
+out_Mono_LPS <- scatter_deg_union_realFC_interaction(
+  prep_deseq_df(res_Mono_LPS_lt32),
+  prep_deseq_df(res_Mono_LPS_ge32),
+  prep_deseq_df(res_Mono_LPS_interaction),
+  "<32+0", "≥32+0"
+)
+
+p_Mono_LPS     <- out_Mono_LPS$plot
+genes_Mono_LPS <- out_Mono_LPS$genes
+tbl_Mono_LPS   <- out_Mono_LPS$table
+
+p_Mono_LPS
+
+# for CD15 R848 vs. baseline 
+res_CD15_R848_lt32 <- readRDS(
+  "DESeq2_age_stratified_results/CD15+_myeloid_cells_R848_lt32+0_stim_vs_baseline.rds")
+
+res_CD15_R848_ge32 <- readRDS(
+  "DESeq2_age_stratified_results/CD15+_myeloid_cells_R848_ge32+0_stim_vs_baseline.rds")
+
+res_CD15_R848_interaction <- readRDS(
+  "DESeq2_interaction_results_genesets/CD15+_myeloid_cells_R848_interaction.rds")
+
+
+out_CD15_R848 <- scatter_deg_union_realFC_interaction(
+  prep_deseq_df(res_CD15_R848_lt32),
+  prep_deseq_df(res_CD15_R848_ge32),
+  prep_deseq_df(res_CD15_R848_interaction),
+  "<32+0", "≥32+0"
+)
+
+p_CD15_R848     <- out_CD15_R848$plot
+genes_CD15_R848 <- out_CD15_R848$genes
+tbl_CD15_R848   <- out_CD15_R848$table
+
+p_CD15_R848
+
+# for CD15 LPS vs. baseline 
+res_CD15_LPS_lt32 <- readRDS(
+  "DESeq2_age_stratified_results/CD15+_myeloid_cells_LPS_lt32+0_stim_vs_baseline.rds")
+
+res_CD15_LPS_ge32 <- readRDS(
+  "DESeq2_age_stratified_results/CD15+_myeloid_cells_LPS_ge32+0_stim_vs_baseline.rds")
+
+res_CD15_LPS_interaction <- readRDS(
+  "DESeq2_interaction_results_genesets/CD15+_myeloid_cells_LPS_interaction.rds")
+
+
+out_CD15_LPS <- scatter_deg_union_realFC_interaction(
+  prep_deseq_df(res_CD15_LPS_lt32),
+  prep_deseq_df(res_CD15_LPS_ge32),
+  prep_deseq_df(res_CD15_LPS_interaction),
+  "<32+0", "≥32+0"
+)
+
+p_CD15_LPS     <- out_CD15_LPS$plot
+genes_CD15_LPS <- out_CD15_LPS$genes
+tbl_CD15_LPS   <- out_CD15_LPS$table
+
+p_CD15_LPS
+
+# -------------------------------
+# BUILD TABLE OF TOP INTERACTION GENES
+# -------------------------------
+
+final_scatter_table <- bind_rows(
+  tbl_Mono_R848 %>% mutate(cell = "Monocytes", stimulus = "R848"),
+  tbl_CD15_R848 %>% mutate(cell = "CD15+ myeloid cells", stimulus = "R848"),
+  tbl_Mono_LPS  %>% mutate(cell = "Monocytes", stimulus = "LPS"),
+  tbl_CD15_LPS  %>% mutate(cell = "CD15+ myeloid cells", stimulus = "LPS")
+)
+
+top5_interaction_table <- final_scatter_table %>%
+  filter(!is.na(interaction_padj)) %>%
+  filter(interaction_padj < 0.1) %>%
+  mutate(
+    direction = case_when(
+      interaction_log2FC > 0 ~ "higher in ≥32+0",
+      interaction_log2FC < 0 ~ "higher in <32+0"
+    )
+  ) %>%
+  group_by(cell, stimulus, direction) %>%
+  arrange(interaction_padj) %>%
+  slice_head(n = 5) %>%
+  ungroup()
 
 # DEG barplots, separate for R848 and LPS
 deseq_lookup <- list(
