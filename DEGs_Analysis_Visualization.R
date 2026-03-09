@@ -11,7 +11,7 @@ library(forcats)
 library(tibble)
 library(DESeq2)
 
-# Load data e.g., Myeloid cells 
+# Load data, e.g., Myeloid cells 
 Myeloid <- ReadH5MU("myeloid_neo_all.h5mu")
 
 # Assign broader cell label categories within metadata 
