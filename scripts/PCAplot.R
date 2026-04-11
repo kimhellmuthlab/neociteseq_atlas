@@ -24,13 +24,15 @@ seurat <- ReadH5MU(input_file)
 DefaultAssay(seurat) <- "rna"
 seurat <- NormalizeData(seurat)
 
-# Aggregate RNA data by sample
+seurat$Sample_Donor <- paste(seurat$Sample_Name, seurat$donor_id, sep = "_")
+
+# Aggregate RNA data by donor and condition
 sample_expression_RNA <- AggregateExpression(
   seurat,
-  group.by = "donor_id",    # Group by donor
+  group.by = "Sample_Donor",    
   assays = "rna", 
-  slot = "data", # Use RNA assay 
-  return.seurat = FALSE        # Do not return a Seurat object, just the matrix
+  slot = "data", 
+  return.seurat = FALSE     
 )
 
 # Extract the aggregated matrix
@@ -39,6 +41,8 @@ filtered_matrix <- aggregated_matrix[apply(aggregated_matrix, 1, var) > 0, ]
 
 # Perform PCA on the filtered data (samples as rows, genes as columns)
 pca_result <- prcomp(t(filtered_matrix), scale. = TRUE)  # Transpose to have samples as rows and genes as columns
+
+explained_variance <- summary(pca_result)$importance[2, ] * 100  # Get percentage
 
 # Create a data frame for PCA coordinates
 pca_df <- as.data.frame(pca_result$x)
@@ -118,7 +122,7 @@ pca_df$label <- ifelse(
   ifelse(pca_df$treatment_group == "LPS", "L", "")
 )
 
-ggplot(pca_df, aes(x = PC1, y = PC2)) +
+p <- ggplot(pca_df, aes(x = PC1, y = PC2)) +
   geom_point(
     aes(fill = fill_color, shape = Postnatal_Age, color = outline_color),
     size = 3.5, stroke = 0.8
