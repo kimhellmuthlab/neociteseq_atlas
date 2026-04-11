@@ -8,15 +8,22 @@ library(MuDataSeurat)
 library(hdf5r)
 library(svglite)
 
+input_file <- "mudata_all.h5mu"
+output_file <- "PCA_plot_all.pdf"
+
+if (!file.exists(input_file)) {
+  stop("Input file not found: ", input_file)
+}
+
 # Load and normalize data
-seurat <- ReadH5MU("mudata_all.h5mu")
+seurat <- ReadH5MU(input_file)
 DefaultAssay(seurat) <- "rna"
 seurat <- NormalizeData(seurat)
 
 # Aggregate RNA data by sample
 sample_expression_RNA <- AggregateExpression(
   seurat,
-  group.by = "Sample_Donor",    # Group by donor
+  group.by = "donor_id",    # Group by donor
   assays = "rna", 
   slot = "data", # Use RNA assay 
   return.seurat = FALSE        # Do not return a Seurat object, just the matrix
@@ -32,13 +39,9 @@ pca_result <- prcomp(t(filtered_matrix), scale. = TRUE)  # Transpose to have sam
 # Create a data frame for PCA coordinates
 pca_df <- as.data.frame(pca_result$x)
 pca_df$Sample_Donor <- rownames(pca_df)
-head(pca_df)
 
 # Standardize Sample_Name format by replacing hyphens with underscores in both pca_df and Seurat metadata
 pca_df$Sample_Donor <- gsub("-", "_", pca_df$Sample_Donor)
-
-# Get explained variance 
-explained_variance <- summary(pca_result)$importance[2, ] * 100  # Get percentage
 
 # Create new grouping variables
 pca_df <- pca_df %>%
@@ -78,13 +81,6 @@ pca_df <- pca_df %>%
     )
   )
 
-# Check unique values
-unique(pca_df$donor_group)
-unique(pca_df$treatment_group)
-unique(pca_df$Gestational_Age)
-unique(pca_df$cell_type)
-unique(pca_df$Postnatal_Age)
-
 # PCA plot 
 custom_colors <- c(
   "adult"   = "#0d0887",
@@ -111,12 +107,6 @@ pca_df$fill_color <- ifelse(
 
 # Map outline color always to Age
 pca_df$outline_color <- custom_colors[pca_df$Gestational_Age]
-
-# Add a label column: "R" for R848, "L" for LPS, "" otherwise
-pca_df$label <- ifelse(
-  pca_df$treatment_group == "R848", "R",
-  ifelse(pca_df$treatment_group == "LPS", "L", "")
-)
 
 # Add a label column: "R" for R848, "L" for LPS, "" otherwise
 pca_df$label <- ifelse(
@@ -166,9 +156,4 @@ ggplot(pca_df, aes(x = PC1, y = PC2)) +
   )
 
 # save plot 
-ggsave(
-  filename = "PCA_plot_all.pdf",
-  plot = last_plot(),   # or replace with your ggplot object if you saved it as 'p'
-  device = "pdf",
-  width = 5, height = 4
-)
+ggsave(filename = output_file, plot = p, device = "pdf", width = 5, height = 4)
