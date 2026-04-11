@@ -43,3 +43,14 @@ BiocManager::install(c("Seurat", "DESeq2", "enrichR"))
 remotes::install_github("satijalab/MuDataSeurat")
 ```
 
+---
+
+## Scripts
+
+This repository contains the following analysis and visualization scripts:
+
+- `PCAplot.R` — Loads the multimodal H5MU object, aggregates RNA expression by sample, performs PCA, and generates a sample-level PCA plot.
+- `Pheatmap.R` — Creates heatmaps of selected marker genes in baseline myeloid cells stratified by gestational age.
+- `StackedBarPlot_cellproportions.R` — Visualizes cell type proportions across gestational age groups using stacked bar plots.
+- `ndensPlot.R` — Produces normalized density UMAP plots for selected sample groups and cell types.
+- `DEGs_Analysis_Visualization.R` — Performs age-stratified and interaction-based differential expression analyses, enrichment testing, and downstream DEG visualizations.
