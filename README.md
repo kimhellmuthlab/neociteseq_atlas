@@ -50,7 +50,7 @@ remotes::install_github("satijalab/MuDataSeurat")
 This repository contains the following analysis and visualization scripts:
 
 - `PCAplot.R` — Loads the multimodal H5MU object, aggregates RNA expression by sample, performs PCA, and generates a sample-level PCA plot.
-- `Pheatmap.R` — Creates heatmaps of selected marker genes stratified by gestational age.
 - `StackedBarPlot_cellproportions.R` — Visualizes cell type proportions across gestational age groups using stacked bar plots.
 - `ndensPlot.R` — Produces normalized density UMAP plots for selected sample groups and cell types.
+- `Pheatmap.R` — Creates heatmaps of selected marker genes stratified by gestational age.
 - `DEGs_Analysis_Visualization.R` — Performs age-stratified and interaction-based differential expression analyses, enrichment testing, and downstream DEG visualizations.
