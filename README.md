@@ -18,4 +18,4 @@ All other analyses were performed using publicly available software packages as 
 
 ---
 ## Graphical Abstract 
-!Graphical Abstract
+![Graphical Abstract](GraphicalAbstract.png)
