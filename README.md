@@ -49,7 +49,7 @@ remotes::install_github("satijalab/MuDataSeurat")
 
 This repository contains the following analysis and visualization scripts:
 
-- `PCAplot.R` — Loads the multimodal H5MU object, aggregates RNA expression by sample, performs PCA, and generates a sample-level PCA plot.
+- `PCAplot.R` — Requires manual download of the CellxGene dataset “All - neonatal and adult circulating immune cells baseline and stim”; the script then aggregates RNA expression by sample, performs PCA, and generates the Fig. 1B plot.
 - `StackedBarPlot_cellproportions.R` — Visualizes cell type proportions across gestational age groups using stacked bar plots.
 - `ndensPlot.R` — Produces normalized density UMAP plots for selected sample groups and cell types.
 - `Pheatmap.R` — Creates heatmaps of selected marker genes stratified by gestational age.
