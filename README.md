@@ -30,22 +30,16 @@ All other analyses were performed using publicly available software packages as 
 
 ## Requirements
 
+The analysis was performed in R using the following packages:
+
 ```r
-# Install core packages
-install.packages(c("ggplot2", "dplyr", "tidyr", "ggrepel", "forcats", "tibble", 
+install.packages(c("ggplot2", "dplyr", "tidyr", "ggrepel", "forcats", "tibble",
                    "Matrix", "pheatmap", "svglite", "ggpattern", "hdf5r"))
 
-# Bioconductor packages
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(c("Seurat", "DESeq2", "enrichR"))
 
-# Multimodal CITE-seq (GitHub)
 remotes::install_github("satijalab/MuDataSeurat")
 ```
-
-**Key packages:**
-- `Seurat`, `MuDataSeurat` — CITE-seq analysis
-- `DESeq2` — differential expression
-- `ggplot2` + extensions — publication-ready figures
 
