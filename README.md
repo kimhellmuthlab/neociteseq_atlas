@@ -18,4 +18,4 @@ All other analyses were performed using publicly available software packages as 
 
 ---
 ## Graphical Abstract 
-![Graphical Abstract](https://raw.githubusercontent.com/kimhellmuthlab/neociteseq_atlas/main/GraphicalAbstract.png)
+!Graphical Abstract
