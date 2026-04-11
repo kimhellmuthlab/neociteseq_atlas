@@ -8,6 +8,10 @@ library(MuDataSeurat)
 library(hdf5r)
 library(svglite)
 
+# Requires manual download of the CellxGene dataset “All - neonatal and adult circulating immune cells baseline and stim”
+# The dataset should be placed in the working directory before running this script.
+# This script aggregates RNA expression by sample, performs PCA, and generates the Fig. 1B plot.
+
 input_file <- "mudata_all.h5mu"
 output_file <- "PCA_plot_all.pdf"
 
