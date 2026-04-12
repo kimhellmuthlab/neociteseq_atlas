@@ -43,7 +43,7 @@ The human neonatal immune system is developmentally specialized to balance the u
 
 ## Data and Materials Availability
 
-All data associated with this study are present in the paper, the Supplementary Materials, or as indicated below:  
+All data and code associated with this study are present in the paper, the Supplementary Materials, or as indicated below:  
 
 - **Interactive exploration and download will be possible via:** [CELLxGENE portal](https://cellxgene.cziscience.com/)  
 - **Raw and processed CITE-seq data matrices will be available at:** [Gene Expression Omnibus (GEO)](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSEXXXXX)  
