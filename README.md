@@ -89,31 +89,44 @@ source("scripts/PCAplot.R")
 
 ## Scripts
 
-This repository contains example analysis and visualization scripts:
+## Scripts
+
+This repository contains example analysis and visualization scripts used in the study.  
+The scripts implement general analysis workflows and can be applied to different subsets of the dataset depending on the use case.
 
 ### `PCAplot.R`
-- **Purpose:** Generate PCA plot corresponding to Fig. 1B
-- **Input:** CELLxGENE dataset (“All - neonatal and adult circulating immune cells baseline and stim”)
-- **Description:** Aggregates RNA expression at the sample level and performs principal component analysis
+- **Input:** Preprocessed single-cell dataset (e.g., CELLxGENE dataset “All - neonatal and adult circulating immune cells baseline and stim”)  
+- **Output:** PCA plot 
+- **Description:**  
+  Aggregates normalized RNA expression at the sample level and performs principal component analysis (PCA) across donors and conditions. Samples are annotated by gestational age, stimulation condition, and postnatal age.  
+- **Example:** Reproduces Fig. 1B when applied to the full dataset  
 
 ### `ndensPlot.R`
-- **Purpose:** Visualize cell distributions in UMAP space
-- **Input:** e.g., Fig. 2A: CELLxGENE dataset (“Myeloid cells - neonatal and adult circulating immune cells baseline”)
-- **Description:** Produces normalized density plots for selected cell populations and conditions
+- **Input:** Preprocessed single-cell dataset (e.g., CELLxGENE dataset “Myeloid cells - neonatal and adult circulating immune cells baseline (Fig 2)”)  
+- **Output:** UMAP and normalized density plots  
+- **Description:**  
+  Generates UMAP visualizations and overlays normalized density estimates to highlight differences in cellular distributions across groups.  
+- **Example:** Reproduces Fig. 2A when applied to the myeloid cell subset  
 
 ### `StackedBarPlot_cellproportions.R`
-- **Purpose:** Visualize cell type proportions across gestational age groups 
-- **Input:** e.g., Fig. 2B: CELLxGENE dataset (“Myeloid cells - neonatal and adult circulating immune cells baseline”)
-- **Description:** Generates stacked bar plots summarizing relative cell type abundances
+- **Input:** Preprocessed single-cell dataset (e.g., CELLxGENE dataset “Myeloid cells - neonatal and adult circulating immune cells baseline (Fig 2)”)  
+- **Output:** Stacked bar plot  
+- **Description:**  
+  Computes relative cell type proportions per group and visualizes them using stacked bar plots, with optional pattern overlays for subpopulations.  
+- **Example:** Reproduces Fig. 2B when applied to the myeloid cell subset  
 
 ### `Pheatmap.R`
-- **Purpose:** Display gene expression patterns
-- **Description:** Generates heatmaps of selected marker genes stratified by gestational age
+- **Input:** Subsetted preprocessed single-cell dataset (e.g., CELLxGENE dataset “Myeloid cells - neonatal and adult circulating immune cells baseline (Fig 2)”, subset "CD15⁺ myeloid cells”)  
+- **Output:** Gene expression heatmap  
+- **Description:**  
+  Calculates average gene expression per group and generates a scaled heatmap of selected marker genes to highlight transcriptional differences between groups.  
+- **Example:** Reproduces Fig. 2C when applied to "CD15⁺ myeloid cells”
 
 ### `DEGs_Analysis_Visualization.R`
-- **Purpose:** Differential expression and downstream analysis
-- **Input:** e.g., CELLxGENE dataset (“All - neonatal and adult circulating immune cells baseline and stim”), subset for myeloid cells. 
-- **Description:** Performs age-stratified and interaction-based differential expression analysis, followed by enrichment testing and visualization
+- **Input:** Subsetted preprocessed single-cell dataset (e.g., CELLxGENE dataset “All - neonatal and adult circulating immune cells baseline and stim”)  
+- **Output:** Differential expression results and visualizations  
+- **Description:**  
+  Performs age-stratified and interaction-based differential expression analysis, followed by enrichment analysis and visualization of differentially expressed genes.
 
 ---
 
