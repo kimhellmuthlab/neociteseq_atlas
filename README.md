@@ -1,4 +1,4 @@
-![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg)
+![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg) ![R ≥ 4.3.2](https://img.shields.io/badge/R-%E2%89%A54.3.2-blue)
 
 # Neonatal CITE-seq atlas
 
