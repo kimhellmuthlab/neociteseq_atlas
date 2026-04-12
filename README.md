@@ -139,8 +139,6 @@ The exact output depends on the selected dataset and preprocessing.
 
 ## Citation
 
-If you use this code, please cite:
-
 Rothämel P, Mattia A, Corey MI, Puzek B, Wiesel J, Michael-Kuschel P, Klein C, Sperandio M, Henneke P, Nussbaum C, Kim-Hellmuth S.  
 **Human neonatal CITE-seq atlas identifies an immune transition at 32 weeks’ gestation from CD15⁺ myeloid-dominated to interferon-primed immunity.**  
 bioRxiv (2026).  
