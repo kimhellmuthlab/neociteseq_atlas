@@ -1,12 +1,26 @@
+# ------------------------------------------------------------------------------
+# Script: PCAplot.R
+# Input: Preprocessed single-cell dataset (e.g., CELLxGENE dataset “All - neonatal and adult circulating immune cells baseline and stim”)  
+# Output: PCA_plot_all.pdf
+# Author: Paula Rothämel
+# ------------------------------------------------------------------------------
+
+# Description:
+# This script loads CITE-seq data from an AnnData (.h5ad)object, aggregates RNA expression
+# at the sample level, performs PCA, and visualizes samples annotated by
+# gestational age, treatment condition, and postnatal age.
+# ------------------------------------------------------------------------------
+
 # Load required libraries
 library(Seurat)
+library(SeuratDisk)
 library(Matrix)
+library(matrixStats)
 library(ggplot2)
 library(dplyr)
 library(ggrepel)
-library(MuDataSeurat)
-library(hdf5r)
 library(svglite)
+library(grid)
 
 # Requires manual download of the CellxGene dataset “All - neonatal and adult circulating immune cells baseline and stim”
 # The dataset should be placed in the working directory before running this script.
