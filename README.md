@@ -145,11 +145,3 @@ Rothämel P, Mattia A, Corey MI, Puzek B, Wiesel J, Michael-Kuschel P, Klein C, 
 **Human neonatal CITE-seq atlas identifies an immune transition at 32 weeks’ gestation from CD15⁺ myeloid-dominated to interferon-primed immunity.**  
 bioRxiv (2026).  
 https://www.biorxiv.org/content/10.64898/2026.04.01.715643v1
-
----
-
-## Contact
-
-- Name: Paula Rothämel, MD  
-- Email: Paula.Rothaemel@med.uni-muenchen.de  
-- Institution: Dr. von Hauner Children's Hospital, LMU Munich 
