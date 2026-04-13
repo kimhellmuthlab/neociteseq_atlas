@@ -20,8 +20,7 @@ Custom analysis and visualization scripts accompanying the study:
 - [Reproducibility](#reproducibility)
 - [Scripts](#scripts)
 - [Citation](#citation)
-- [Contact](#contact)
-
+  
 ---
 
 ## Overview
