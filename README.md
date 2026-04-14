@@ -1,4 +1,5 @@
-![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg) ![R ≥ 4.3.2](https://img.shields.io/badge/R-%E2%89%A54.3.2-blue)
+![License: CC BY 4.0](https://img.shields.io/badge/License-CC%20BY%204.0-lightgrey.svg) ![R ≥ 4.3.2](https://img.shields.io/badge/R-%E2%89%A54.3.2-blue) ![Python 3.10](https://img.shields.io/badge/Python-3.10-blue)
+
 
 # Neonatal CITE-seq atlas
 
@@ -55,7 +56,9 @@ All other analyses were performed using publicly available software packages as 
 
 ## Environment Setup
 
-Analysis was performed in R. Below is a minimal setup:
+Analysis was performed in R with additional Python dependencies accessed via the `reticulate` package.
+
+Scripts require a working Python environment with the `anndata` package installed.
 
 ```r
 # CRAN packages
@@ -71,6 +74,30 @@ BiocManager::install(c("Seurat", "DESeq2", "enrichR"))
 # GitHub dependency
 install.packages("remotes")
 remotes::install_github("satijalab/MuDataSeurat")
+```
+
+## Environment Setup
+
+Analysis was performed using **R (≥ 4.3.2)** and **Python 3.10**, with cross-language integration via `reticulate`.
+
+---
+
+### R environment
+
+Install required R packages:
+
+```r
+install.packages(c(
+  "ggplot2", "dplyr", "tidyr", "ggrepel", "forcats", "tibble",
+  "Matrix", "pheatmap", "svglite", "ggpattern", "hdf5r",
+  "reticulate", "ggnewscale"
+))
+
+# Bioconductor packages
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install(c("Seurat", "DESeq2", "enrichR"))
 ```
 
 ---
