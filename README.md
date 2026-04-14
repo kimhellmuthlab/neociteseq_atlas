@@ -60,26 +60,6 @@ Analysis was performed in R with additional Python dependencies accessed via the
 
 Scripts require a working Python environment with the `anndata` package installed.
 
-```r
-# CRAN packages
-install.packages(c("ggplot2", "dplyr", "tidyr", "ggrepel", "forcats", "tibble",
-                   "Matrix", "pheatmap", "svglite", "ggpattern", "hdf5r"))
-
-# Bioconductor packages
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install(c("Seurat", "DESeq2", "enrichR"))
-
-# GitHub dependency
-install.packages("remotes")
-remotes::install_github("satijalab/MuDataSeurat")
-```
-
-## Environment Setup
-
-Analysis was performed using **R (≥ 4.3.2)** and **Python 3.10**, with cross-language integration via `reticulate`.
-
 ---
 
 ### R environment
@@ -87,6 +67,7 @@ Analysis was performed using **R (≥ 4.3.2)** and **Python 3.10**, with cross-l
 Install required R packages:
 
 ```r
+# CRAN packages
 install.packages(c(
   "ggplot2", "dplyr", "tidyr", "ggrepel", "forcats", "tibble",
   "Matrix", "pheatmap", "svglite", "ggpattern", "hdf5r",
@@ -113,6 +94,9 @@ Example:
 ```r
 source("scripts/PCAplot.R")
 ```
+
+All scripts load AnnData `.h5ad` files and handle Python objects through `reticulate`, allowing direct use of Python-based data structures from within R.
+
 ---
 
 ## Reproducibility
