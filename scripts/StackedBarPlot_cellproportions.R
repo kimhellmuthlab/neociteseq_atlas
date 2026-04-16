@@ -88,7 +88,7 @@ meta <- seurat@meta.data
 meta <- meta %>%
   dplyr::mutate(
     new_labels = case_when(
-      cell_labels == "CD15+ myeloid cells" & 
+      author_cell_labels == "CD15+ myeloid cells" & 
         leiden_totalVI == "6" ~ "ARG1high CD15+",
       TRUE ~ cell_labels
     )
