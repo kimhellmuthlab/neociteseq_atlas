@@ -1,29 +1,148 @@
+# ------------------------------------------------------------------------------
+# Script: DEGs_Analysis_Visualization.R
+# Input: Preprocessed single-cell dataset (.h5ad)
+# Author: Paula Rothämel
+# ------------------------------------------------------------------------------
+
+# Description:
+# Analysis of CITE-seq single-cell RNA data (.h5ad) using Seurat and DESeq2.
+# Includes pseudobulk differential expression, age-stratified and stimulus-specific 
+# comparisons, enrichment analysis, interaction modeling, and visualization.
+# ------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
 # Load required libraries
+# ------------------------------------------------------------------------------
+library(reticulate)
 library(Seurat)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
-library(MuDataSeurat)
-library(hdf5r)
 library(ggrepel)
 library(enrichR)
 library(forcats)
 library(tibble)
 library(DESeq2)
 
-# Load data, e.g., Myeloid cells 
-Myeloid <- ReadH5MU("myeloid_neo_all.h5mu")
+# ------------------------------------------------------------------------------
+# Input / Output
+# ------------------------------------------------------------------------------
+args <- commandArgs(trailingOnly = TRUE)
+input_file <- ifelse(length(args) >= 1, args[1], "PATH/TO/YOUR/FILE.h5ad")
+
+gtf_file <- ifelse(
+  length(args) >= 3,
+  args[3],
+  "data/gencode.v42.primary_assembly.annotation-filtered.gtf"
+)
+
+if (!file.exists(input_file)) stop("Input file not found: ", input_file)
+if (!file.exists(gtf_file)) stop("GTF file not found: ", gtf_file)
+
+# ------------------------------------------------------------------------------
+# Helper Functions
+# ------------------------------------------------------------------------------
+extract_gtf_field <- function(x, field) {
+  pattern <- paste0(field, " ([^;]+);")
+  m <- regexpr(pattern, x)
+  regmatches(x, m) |> sub(paste0(field, " "), "", x = _)
+}
+
+# ------------------------------------------------------------------------------
+# Load .h5ad via anndata
+# ------------------------------------------------------------------------------
+anndata <- import("anndata", convert = FALSE)
+adata <- anndata$read_h5ad(input_file)
+
+# ------------------------------------------------------------------------------
+# Build Seurat object
+# ------------------------------------------------------------------------------
+# --- counts from raw.X ---
+counts <- py_to_r(adata$raw$X$toarray())   # dense Python CSR → R matrix
+counts <- as(counts, "dgCMatrix")          # sparse dgCMatrix for Seurat
+counts <- t(counts)                        # gene × cell
+
+# Fix rownames/colnames
+rownames(counts) <- py_to_r(adata$raw$var_names$to_list())
+colnames(counts) <- py_to_r(adata$obs_names$to_list())
+seurat <- CreateSeuratObject(counts = counts)
+
+# ------------------------------------------------------------------------------
+# Add metadata
+# ------------------------------------------------------------------------------
+meta <- py_to_r(adata$obs)
+meta <- as.data.frame(meta)
+seurat <- AddMetaData(seurat, metadata = meta)
+
+# ------------------------------------------------------------------------------
+# Map Ensembl IDs → gene symbols
+# ------------------------------------------------------------------------------
+gtf <- read.delim(
+  gtf_file,
+  header = FALSE,
+  sep = "\t",
+  comment.char = "#",
+  stringsAsFactors = FALSE
+)
+
+gtf_gene <- gtf[gtf$V3 == "gene", ]
+
+gene_id <- extract_gtf_field(gtf_gene$V9, "gene_id")
+gene_name <- extract_gtf_field(gtf_gene$V9, "gene_name")
+gene_id <- sub("\\..*$", "", gene_id)
+gene_name <- sub(";$", "", gene_name)
+ensg_to_symbol <- setNames(gene_name, gene_id)
+counts <- GetAssayData(seurat, assay = "RNA", slot = "counts")
+ensembl_ids <- rownames(counts)
+ensembl_ids_clean <- sub("\\..*$", "", ensembl_ids)
+
+gene_symbols <- ensg_to_symbol[ensembl_ids_clean]
+
+# fallback for missing symbols
+missing <- is.na(gene_symbols) | gene_symbols == ""
+gene_symbols[missing] <- ensembl_ids_clean[missing]
+
+rownames(counts) <- gene_symbols
+counts <- counts[!duplicated(rownames(counts)), ]
+
+# rebuild Seurat object
+seurat <- CreateSeuratObject(
+  counts = counts,
+  meta.data = seurat@meta.data
+)
+
+seurat <- NormalizeData(seurat)
+
 
 # Assign broader cell label categories within metadata 
-Myeloid@meta.data$cell_labels <- as.character(Myeloid@meta.data$cell_labels)
-Myeloid@meta.data$cell_labels[Myeloid@meta.data$cell_labels %in% c("Classical Monocytes", "Non-classical Monocytes", "Intermediate Monocytes")] <- "Monocytes"
-Myeloid@meta.data$cell_labels <- factor(Myeloid@meta.data$cell_labels)
+seurat@meta.data$author_cell_labels <- 
+  as.character(seurat@meta.data$author_cell_labels)
+seurat@meta.data$author_cell_labels[seurat@meta.data$author_cell_labels %in% 
+                                      c("Classical Monocytes", 
+                                        "Non-classical Monocytes", 
+                                        "Intermediate Monocytes")] <- "Monocytes"
+seurat@meta.data$author_cell_labels <- factor(seurat@meta.data$author_cell_labels)
 
 # Age-stratified DEG analysis e.g., for Myeloid cells (stim vs. baseline) Fig. 4
 # -------------------------------
 # SETTINGS
 # -------------------------------
-
+seurat$Sample_Donor <- paste(seurat$Sample_Name, seurat$donor_id, sep = "_")
+seurat$new_batch <- ifelse(grepl("^adult_", seurat$Sample_Donor), "adult",
+                           ifelse(grepl("_cbmc_", seurat$Sample_Donor) & 
+                                    grepl("^unstim_", seurat$Sample_Donor), "cbmc_unstim",
+                                  ifelse(grepl("_cbmc_", seurat$Sample_Donor) &
+                                           grepl("^LPS_", seurat$Sample_Donor), "cbmc_LPS",
+                                         ifelse(grepl("_cbmc_", seurat$Sample_Donor) & 
+                                                  grepl("^R848_", seurat$Sample_Donor), "cbmc_R848",
+                                                ifelse(grepl("_neo_|_NeoI|_NeoII", seurat$Sample_Donor) & 
+                                                         grepl("^unstim_", seurat$Sample_Donor), "neo_unstim",
+                                                       ifelse(grepl("_neo_|_NeoI|_NeoII", seurat$Sample_Donor) & 
+                                                                grepl("^LPS_", seurat$Sample_Donor), "neo_LPS",
+                                                              ifelse(grepl("_neo_|_NeoI|_NeoII", seurat$Sample_Donor) & 
+                                                                       grepl("^R848_", seurat$Sample_Donor), "neo_R848",
+                                                                     NA)))))))
+  
 cell_types <- c(
   "Monocytes",
   "CD15+ myeloid cells"
@@ -40,7 +159,7 @@ dir.create(outdir, showWarnings = FALSE)
 # -------------------------------
 
 subset_all <- subset(
-  Myeloid,
+  seurat,
   subset = Sample_Name %in% c(
     "unstim_extreme", "unstim_very",
     "unstim_late", "unstim_term",
@@ -51,7 +170,7 @@ subset_all <- subset(
   )
 )
 
-Idents(subset_all) <- "cell_labels"
+Idents(subset_all) <- "author_cell_labels"
 
 # -------------------------------
 # MAIN LOOP
@@ -61,7 +180,7 @@ for (cluster in cell_types) {
   
   message("Processing cell type: ", cluster)
   
-  cluster_seurat <- subset(subset_all, cell_labels == cluster)
+  cluster_seurat <- subset(subset_all, author_cell_labels == cluster)
   
   if (ncol(cluster_seurat) < 30) {
     message("  -> too few cells, skipping")
@@ -75,10 +194,10 @@ for (cluster in cell_types) {
   gene_counts <- AggregateExpression(
     cluster_seurat,
     group.by = c("new_batch", "Sample_Donor"),
-    assays = "rna",
+    assays = "RNA",
     slot = "counts",
     return.seurat = FALSE
-  )$rna %>%
+  )$RNA%>%
     as.data.frame() %>%
     rownames_to_column("gene")
   
@@ -373,7 +492,7 @@ dir.create(outdir, showWarnings = FALSE)
 # -------------------------------
 
 subset_all <- subset(
-  Myeloid,
+  seurat,
   subset = Sample_Name %in% c(
     "unstim_extreme", "unstim_very",
     "unstim_late", "unstim_term",
@@ -384,7 +503,7 @@ subset_all <- subset(
   )
 )
 
-Idents(subset_all) <- "cell_labels"
+Idents(subset_all) <- "author_cell_labels"
 
 get_geneset <- function(cluster, stimulus) {
   if (cluster == "Monocytes" && stimulus == "R848") return(genes_monocytes_R848)
@@ -402,7 +521,7 @@ for (cluster in cell_types) {
   
   message("Processing: ", cluster)
   
-  cluster_seurat <- subset(subset_all, cell_labels == cluster)
+  cluster_seurat <- subset(subset_all, author_cell_labels == cluster)
   
   if (ncol(cluster_seurat) < 30) {
     message("  -> too few cells, skipping")
@@ -416,10 +535,10 @@ for (cluster in cell_types) {
   gene_counts <- AggregateExpression(
     cluster_seurat,
     group.by = c("new_batch", "Sample_Donor"),
-    assays = "rna",
+    assays = "RNA",
     slot = "counts",
     return.seurat = FALSE
-  )$rna %>%
+  )$RNA %>%
     as.data.frame() %>%
     rownames_to_column("gene")
   
@@ -942,3 +1061,5 @@ make_gene_barplot_top5_single_stimulus(
   direction_keep = "higher in <32+0",
   outfile = "Monocytes_R848_top5_lt32.pdf"
 )
+
+sessionInfo()
