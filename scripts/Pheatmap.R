@@ -94,8 +94,8 @@ gtf <- read.delim(
 
 gtf_gene <- gtf[gtf$V3 == "gene", ]
 
-gene_id <- extract_field(gtf_gene$V9, "gene_id")
-gene_name <- extract_field(gtf_gene$V9, "gene_name")
+gene_id <- extract_gtf_field(gtf_gene$V9, "gene_id")
+gene_name <- extract_gtf_field(gtf_gene$V9, "gene_name")
 gene_id <- sub("\\..*$", "", gene_id)
 gene_name <- sub(";$", "", gene_name)
 ensg_to_symbol <- setNames(gene_name, gene_id)
@@ -125,7 +125,7 @@ seurat <- NormalizeData(seurat)
 # ------------------------------------------------------------------------------
 subset_obj <- subset(
   seurat,
-  subset = cell_labels == "CD15+ myeloid cells"
+  subset = author_cell_labels == "CD15+ myeloid cells"
 )
 
 subset_obj <- NormalizeData(subset_obj)
