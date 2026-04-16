@@ -85,11 +85,11 @@ seurat$Age_Group <- ifelse(
 # ------------------------------------------------------------------------------
 
 cell_type_colors <- c(
-  'Classical Monocytes' = '#4682B4', # Yellow-Green  
-  'Intermediate Monocytes' = '#FF8C00', # Dark Orange  
-  'Non-classical Monocytes' = '#BA55D3', # Medium Orchid  
+  'Classical Monocytes' = '#4682B4', 
+  'Intermediate Monocytes' = '#FF8C00', 
+  'Non-classical Monocytes' = '#BA55D3',   
   'cDCs' = '#A9A9A9',  
-  'CD15+ myeloid cells' = '#9ACD32'  # Steel Blue  
+  'CD15+ myeloid cells' = '#9ACD32'   
 )
 
 # UMAP plot 
@@ -134,27 +134,27 @@ for (group_name in names(group_conditions)) {
   umap_coords$Group <- group_name
   # Create the UMAP plot with normalized density contours (ndensity)
   p_ndensity <- ggplot(umap_coords, aes(x = UMAP_1, y = UMAP_2)) +
-    geom_point(aes(color = cell_type), alpha = 0.5) +  # Map color to cell_type
-    stat_density_2d(aes(fill = after_stat(ndensity)), geom = "raster", contour = FALSE, alpha = 0.7) +  # Normalized density contours
+    geom_point(aes(color = cell_type), alpha = 0.5) +  
+    stat_density_2d(aes(fill = after_stat(ndensity)), geom = "raster", contour = FALSE, alpha = 0.7) +  
     scale_color_manual(values = cell_type_colors) + 
     scale_fill_viridis_c() +
     theme(
-      axis.text = element_blank(),  # Remove axis labels (numbers)
-      axis.title = element_blank(),  # Remove axis titles
-      axis.ticks = element_blank(),  # Remove axis ticks
-      axis.line = element_line(color = "black"),  # Keep axis lines visible
-      legend.position = "right",  # Move legend to the right
-      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),  # Title styling
-      legend.text = element_text(size = 10),  # Make legend text smaller
-      legend.title = element_text(size = 20),  # Make legend title smaller
-      legend.key.size = unit(0.5, "cm")  # Make legend keys smaller
+      axis.text = element_blank(), 
+      axis.title = element_blank(),
+      axis.ticks = element_blank(),
+      axis.line = element_line(color = "black"),
+      legend.position = "right",
+      plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+      legend.text = element_text(size = 10),
+      legend.title = element_text(size = 20),
+      legend.key.size = unit(0.5, "cm")
     ) +
-    ggtitle(paste("Normalized Density-UMAP", group_name))  # Add title with group name
+    ggtitle(paste("Normalized Density-UMAP", group_name))
   # Store the normalized density plot
   plots_grouped_ndensity[[group_name]] <- p_ndensity
 }
 
 # Display a specific normalized density plot (e.g., "adult")
-plots_grouped_ndensity[["late_term"]]
+plots_grouped_ndensity[["adult"]]
 
 sessionInfo()
