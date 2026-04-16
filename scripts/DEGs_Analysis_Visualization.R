@@ -113,7 +113,10 @@ seurat <- CreateSeuratObject(
 
 seurat <- NormalizeData(seurat)
 
-
+# Age-stratified DEG analysis e.g., for Myeloid cells (stim vs. baseline) Fig. 4
+# -------------------------------
+# SETTINGS
+# -------------------------------
 # Assign broader cell label categories within metadata 
 seurat@meta.data$author_cell_labels <- 
   as.character(seurat@meta.data$author_cell_labels)
@@ -123,10 +126,6 @@ seurat@meta.data$author_cell_labels[seurat@meta.data$author_cell_labels %in%
                                         "Intermediate Monocytes")] <- "Monocytes"
 seurat@meta.data$author_cell_labels <- factor(seurat@meta.data$author_cell_labels)
 
-# Age-stratified DEG analysis e.g., for Myeloid cells (stim vs. baseline) Fig. 4
-# -------------------------------
-# SETTINGS
-# -------------------------------
 seurat$Sample_Donor <- paste(seurat$Sample_Name, seurat$donor_id, sep = "_")
 seurat$new_batch <- ifelse(grepl("^adult_", seurat$Sample_Donor), "adult",
                            ifelse(grepl("_cbmc_", seurat$Sample_Donor) & 
@@ -588,7 +587,7 @@ for (cluster in cell_types) {
   }
   
   # -------------------------------
-  # RESTRICT TO GENE SET  <<< NEW
+  # RESTRICT TO GENE SET 
   # -------------------------------
   
   counts_mat <- gene_counts %>%
@@ -629,7 +628,7 @@ for (cluster in cell_types) {
   # RESULTS
   # -------------------------------
   
-  # 1) Interaction term = STATISTICS
+  # 1) Interaction term 
   res_interaction <- results(
     dds,
     name = paste0("age_groupge32.0.condition", stimulus)
@@ -653,7 +652,7 @@ for (cluster in cell_types) {
   )
   
   # -------------------------------
-  # SAVE EVERYTHING
+  # SAVE 
   # -------------------------------
   
   prefix <- paste0(outdir, "/", gsub(" ", "_", cluster), "_", stimulus)
@@ -720,7 +719,7 @@ scatter_deg_union_realFC_interaction <- function(
       sig_category = sig_early | sig_late
     )
   
-  ## ---- protein-coding only + inclusion
+  ## ---- protein-coding only 
   merged <- merged %>%
     filter(is_protein_coding(gene)) %>%
     filter(sig_category)
@@ -791,7 +790,7 @@ scatter_deg_union_realFC_interaction <- function(
         "higher in ≥32+0" = 1,
         "no interaction" = 0.5
       ),
-      guide = "none"   # Alpha nicht in der Legende anzeigen
+      guide = "none"  
     ) +
     labs(
       x = paste0("log2FC of ", label_late),
