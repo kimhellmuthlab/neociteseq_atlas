@@ -70,7 +70,7 @@ Install required R packages:
 # CRAN packages
 install.packages(c(
   "ggplot2", "dplyr", "tidyr", "ggrepel", "forcats", "tibble",
-  "Matrix", "pheatmap", "svglite", "ggpattern", "hdf5r",
+  "Matrix", "pheatmap", "svglite", "ggpattern",
   "reticulate", "ggnewscale"
 ))
 
@@ -80,7 +80,6 @@ if (!require("BiocManager", quietly = TRUE))
 
 BiocManager::install(c("Seurat", "DESeq2", "enrichR"))
 ```
-
 ---
 
 ## Usage
