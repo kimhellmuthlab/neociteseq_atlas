@@ -8,7 +8,7 @@
 # Description:
 # This script loads CITE-seq data from an AnnData (.h5ad) object, aggregates RNA
 # expression at the sample level, performs PCA, and visualizes samples annotated
-# by gestational age, treatment condition, and postnatal age.
+# by gestational age, condition, and postnatal age.
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------
@@ -17,7 +17,6 @@
 library(reticulate)
 library(Seurat)
 library(Matrix)
-library(matrixStats)
 library(ggplot2)
 library(dplyr)
 library(ggrepel)
