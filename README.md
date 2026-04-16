@@ -97,6 +97,17 @@ source("scripts/PCAplot.R")
 
 All scripts load AnnData `.h5ad` files and handle Python objects through `reticulate`, allowing direct use of Python-based data structures from within R.
 
+### Required input files
+
+- Preprocessed single-cell dataset (`.h5ad`)
+- Gene annotation file:
+  `gencode.v42.primary_assembly.annotation-filtered.gtf`
+
+The annotation file can be obtained from the BD Rhapsody WTA reference archive (`RhapRef_Human_WTA_2023-02.tar.gz`):  
+[BD Rhapsody WTA Reference Archive](http://bd-rhapsody-public.s3-website-us-east-1.amazonaws.com/Rhapsody-WTA/)
+
+Only the `.gtf` file is required for this script. The full reference archive is not needed unless performing upstream preprocessing.
+
 ---
 
 ## Reproducibility
